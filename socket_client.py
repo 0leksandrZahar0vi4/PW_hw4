@@ -3,7 +3,7 @@ import socket
 
 def main():
     host = socket.gethostname()
-    port = 3000
+    port = 5000
 
     client_socket = socket.socket()
     client_socket.connect((host, port))
@@ -11,8 +11,8 @@ def main():
 
     while message.lower().strip() != "quit":
         client_socket.send(message.encode())
-        messag = client_socket.recv(1024).decode()
-        print(f"Received message {messag}")
+        msg = client_socket.recv(1024).decode()
+        print(f"Received message {msg}")
         message = input("Enter message: ")
 
     client_socket.close()

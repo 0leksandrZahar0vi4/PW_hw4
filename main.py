@@ -11,7 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 
 BASE_DIR = Path()
 BUFFER_SIZE = 1024
-HTTP_PORT = 3000
+HTTP_PORT = 8080
 HTTP_HOST = "0.0.0.0"
 SOCKET_HOST = "127.0.0.1"
 SOCKET_PORT = 5000
@@ -27,21 +27,21 @@ class GoitFramework(BaseHTTPRequestHandler):
         match route.path:
             case "/":
                 self.send_html("index.html")
-            case "/contact":
-                self.send_html("contact.html")
-            case "/blog":
-                self.render_template("blog.jinja")
+            case "/message":
+                self.send_html("message.html")
+            case "/templetes/blog":
+                self.render_template("blog.html")
             case _:
                 file = BASE_DIR.joinpath(route.path[1:])
                 if file.exists():
                     self.send_static(file)
                 else:
-                    self.send_html("404.html", 404)
+                    self.send_html(filename="error.html", status_code= 404)
 
     def do_POST(self):
         size = self.headers.get("Content-Length")
         data = self.rfile.read(int(size))
-
+        
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         client_socket.sendto(data, (SOCKET_HOST, SOCKET_PORT))
         client_socket.close()
@@ -62,7 +62,7 @@ class GoitFramework(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/html")
         self.end_headers()
 
-        with open("storage/data.json", "r", encoding="utf-8") as file:
+        with open("js/app.json", "r", encoding="utf-8") as file:
             data = json.load(file)
 
         template = jinja.get_template(filename)
@@ -85,16 +85,13 @@ class GoitFramework(BaseHTTPRequestHandler):
 def save_data_from_form(data):
     parse_data = urllib.parse.unquote_plus(data.decode())
     try:
-        parse_dict = {
-            key: value for key, value in [el.split("=") for el in parse_data.split("&")]
-        }
-        with open("storage/data.json", "w", encoding="utf-8") as file:
+        parse_dict = {key: value for key, value in [el.split('=') for el in parse_data.split('&')]}
+        with open('data/data.json', 'w', encoding='utf-8') as file:
             json.dump(parse_dict, file, ensure_ascii=False, indent=4)
     except ValueError as err:
         logging.error(err)
     except OSError as err:
         logging.error(err)
-
 
 def run_socket_server(host, port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -109,8 +106,7 @@ def run_socket_server(host, port):
         pass
     finally:
         server_socket.close()
-
-
+    
 def run_http_server(host, port):
     address = (host, port)
     http_server = HTTPServer(address, GoitFramework)
@@ -131,3 +127,4 @@ if __name__ == "__main__":
 
     server_socket = Thread(target=run_socket_server, args=(SOCKET_HOST, SOCKET_PORT))
     server_socket.start()
+
