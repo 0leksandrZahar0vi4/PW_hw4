@@ -118,11 +118,11 @@ def run_http_server(host, port):
         http_server.server_close()
 
 
-    if __name__ == "__main__":
-        logging.basicConfig(level=logging.DEBUG, format="%(threadName)s %(message)s")
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format="%(threadName)s %(message)s")
 
-        server = Thread(target=run_http_server, args=(HTTP_HOST, HTTP_PORT))
-        server.start()
+    server = Thread(target=run_http_server, args=(HTTP_HOST, HTTP_PORT))
+    server.start()
 
-        server_socket = Thread(target=run_socket_server, args=(SOCKET_HOST, SOCKET_PORT))
-        server_socket.start()
+    server_socket = Thread(target=run_socket_server, args=(SOCKET_HOST, SOCKET_PORT))
+    server_socket.start()
